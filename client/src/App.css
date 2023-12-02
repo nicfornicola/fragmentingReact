@@ -1,14 +1,4 @@
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
 
 .App-header {
   background-color: #3d4450;
@@ -19,29 +9,30 @@
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-
-  
-}
-
 img {
     border: 1px solid #555;
 }
 
-#fragButton {
-    position: fixed;
+.resetButton {
     bottom: 5%;
     right: 5%;
-    width:10%;
+    width:8%;
     height:10%;
 }
+
+.fragButtonVis {
+    
+}
+
+.help {
+    position: fixed;
+    top: 5%;
+    right: 20%;
+}
+
+.fragButtonInVis {
+    background: transparent;
+    border: none !important;
+    font-size:0;
+}
+
