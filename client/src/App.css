@@ -21,7 +21,8 @@ img {
 }
 
 .fragButtonVis {
-    
+    height: 50px;
+    width: 8%;
 }
 
 .help {
@@ -34,5 +35,9 @@ img {
     background: transparent;
     border: none !important;
     font-size:0;
+}
+
+.desc {
+    font-size: 50%;
 }
 

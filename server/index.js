@@ -19,6 +19,7 @@ app.use(express.static(__dirname+'/public'));
 let imgName = "";
 // How many images will be created and fragmented
 let loops = 10
+let fragmentSizePer = 32;
 
 app.get('/list', async (req, res) => {
         if(imgName != "") {
@@ -59,6 +60,12 @@ app.get('/loops', async (req, res) => {
     });
 });
 
+app.get('/fragmentSizePer', async (req, res) => {
+    res.json({ 
+        fragmentSizePer: fragmentSizePer
+    });
+});
+
 app.get('/imageName', async (req, res) => {
     res.json({ 
         imgName: imgName
@@ -68,6 +75,11 @@ app.get('/imageName', async (req, res) => {
 app.post('/new_loops', upload.none(), async (req, res) => {
     loops = req.body.newLoops;
     res.status(200).json({ message: 'Data received successfully', data: loops });
+});
+
+app.post('/new_frag_size', upload.none(), async (req, res) => {
+    fragmentSizePer = req.body.newFragSize;
+    res.status(200).json({ message: 'Data received successfully', data: fragmentSizePer });
 });
 
 app.post('/reset_name', upload.none(), async (req, res) => {
@@ -103,16 +115,14 @@ app.get('/frag', async (req, res) => {
         fragmentImage();
         res.send({ message: 'Fragment!' });
     } else {
-        console.log("Error: imgName is empty")
+        console.log("ERROR: imgName is empty")
     }
         
 });
 const fragmentImage = async () => {
-    // let killMap = [[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]]
     let killMap = []
-    let pixelSize = 20;
 
-    for(let i; i < pixelSize; i++) {
+    for(let i = 0; i < fragmentSizePer+1; i++) {
         killMap.push([]);
     }
 
@@ -141,14 +151,13 @@ const fragmentImage = async () => {
 
             
             // Fill kill map with current factorOfFragment percentage of true so we know which chunks to delete
-            fillMap(factorOfFragment, killMap, pixelSize);
+            fillMap(factorOfFragment, killMap, fragmentSizePer);
             // Delete the n x n chunks, this = the new png
-            deleteChunks(this, killMap, pixelSize);
+            deleteChunks(this, killMap, fragmentSizePer);
 
             // Set the path for the new image to be created
             // i.e. "./public/images/fragged/frog/frogFragged6.png"
             let imgPathFragged = "./client/public/images/fragged/" + imgName + "/" + imgName + 'Fragged' + counter + '.png'
-            console.log("Fragmenting " + factorOfFragment + "0%...")
             console.log("Created: " + imgPathFragged)
 
             // Write the new image to the file
@@ -169,13 +178,13 @@ function getRandomInt(max) {
     return Math.ceil(Math.random() * max);
 }
 
-function fillMap(factorOfFragment, killMap, pixelSize) {
+function fillMap(factorOfFragment, killMap, fragmentSizePer) {
     // Fill the killMap with trues where we are going to kill stuff
-    for (let y = 0; y < pixelSize+1; y++) {
-        for (let x = 0; x < pixelSize+1; x++) {
+    for (let y = 0; y < fragmentSizePer+1; y++) {
+        for (let x = 0; x < fragmentSizePer+1; x++) {
             let rint = getRandomInt(loops)
             // If chunk is false and random number is less then factor, kill this chunk = true
-            if(!killMap[y][x] && rint <= factorOfFragment) {
+            if(rint <= factorOfFragment) {
                 killMap[y][x] = true;
             } 
         }
@@ -183,7 +192,7 @@ function fillMap(factorOfFragment, killMap, pixelSize) {
 
 }
 
-function deleteChunks(img, killMap, pixelSize) {
+function deleteChunks(img, killMap, fragmentSizePer) {
     // Keeps tracks of n x n chunks 
     let yCounter = 0;
     let xCounter = 0;
@@ -201,15 +210,15 @@ function deleteChunks(img, killMap, pixelSize) {
                 pixels[i + 2] = 255;
             }
 
-            // If we are at a multiple of pixelSize then this ends the chunk, move on to next
-            if(x % Math.ceil(img.width/pixelSize) == 0) {
+            // If we are at a multiple of fragmentSizePer then this ends the chunk, move on to next
+            if(x % Math.ceil(img.width/fragmentSizePer) == 0) {
                 xCounter++;
             }
         }
         // Reset x chunk counter since we are going down a row
         xCounter = 0;
-        // If we are at a multiple of pixelSize then this ends the chunk, move on to next
-        if(y % Math.ceil(img.height/pixelSize) == 0)
+        // If we are at a multiple of fragmentSizePer then this ends the chunk, move on to next
+        if(y % Math.ceil(img.height/fragmentSizePer) == 0)
             yCounter++;
     }
 

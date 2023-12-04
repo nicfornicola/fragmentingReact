@@ -10,6 +10,7 @@ function App() {
     const [percent, setPercent] = React.useState(0);
     const [file, setFile] = React.useState(null);
     const [loops, setLoops] = React.useState(10);
+    const [fragSize, setFragSize] = React.useState(32);
     const [fragButtonClass, setFragButtonClass] = React.useState("fragButtonInVis");
     const [imgName, setImgName] = React.useState("");
 
@@ -28,6 +29,15 @@ function App() {
 
     }, []);
 
+    React.useEffect(() => {
+        fetch("/fragmentSizePer")
+        .then((res) => res.json())
+        .then((data) => {
+            setFragSize(JSON.parse(data.fragmentSizePer))
+        });
+
+    }, []);
+
     const getList = (event) => {
         fetch("/list")
         .then((res) => res.json())
@@ -40,7 +50,6 @@ function App() {
         fetch("/imageName")
         .then((res) => res.json())
         .then((data) => {
-            console.log(data.imgName)
             if(data.imgName !== "") {
                 setFragButtonClass("fragButtonVis");
                 setImgName(data.imgName.charAt(0).toUpperCase() + data.imgName.slice(1))
@@ -91,6 +100,11 @@ function App() {
         callBackEndLoops(newLoops)
     };
 
+    const handleFragmentSizeChange = (newFragSize) => {
+        setFragSize(newFragSize);
+        callBackEndFragSize(newFragSize)
+    };
+
     const handleFrag = () => {
         window.location.reload();
 
@@ -102,10 +116,11 @@ function App() {
 
     const handleReset = () => {
         window.location.reload();
-
         callBackEndLoops(10);
         setLoops(10);    
         setImgName("");
+        setFragSize(32);
+        callBackEndFragSize(32);
         callBackEndResetName();
         setFragButtonClass("fragButtonInVis");
     };
@@ -128,18 +143,18 @@ function App() {
                 Upload
                 </button>
             </form>
-            <button
-                type="button"
-                className={fragButtonClass}
-                onClick={handleFrag}
-            >
-                Fragment {imgName}
-            </button>
             <br/>
             <label>Number of Images</label>
             <NumberPicker
                 value={loops}
                 onChange={value => handleLoopChange(value)}
+            />
+            <label>Number of Fragments</label>
+            <br/>
+            <span className="desc">The larger the number, the smaller the "pixel" size</span>
+            <NumberPicker
+                value={fragSize}
+                onChange={value => handleFragmentSizeChange(value)}
             />
 
             <button 
@@ -148,7 +163,15 @@ function App() {
                 onClick={handleReset} >
             Reset Values
             </button>
-        
+            <br/>
+            <br/>
+            <button
+                type="button"
+                className={fragButtonClass}
+                onClick={handleFrag}
+            >
+                Fragment {imgName}
+            </button>
         </div>
         
         
@@ -157,6 +180,7 @@ function App() {
             <ol>
                 <li>Choose File</li>
                 <li>Upload</li>
+                <li>Change Options</li>
                 <li>Fragment</li>
             </ol>
         </div>
@@ -181,6 +205,16 @@ async function callBackEndLoops(newLoops) {
     });
 }
 
+async function callBackEndFragSize(newFragSize) {
+    const formData = new FormData();
+    formData.append("newFragSize", newFragSize);
+  
+    await fetch("/new_frag_size", {
+      method: "POST",
+      body: formData,
+    });
+}
+
 async function callBackEndResetName() {
     const formData = new FormData();
     formData.append("newName", "");
@@ -191,7 +225,7 @@ async function callBackEndResetName() {
     });
 }
 
-async function upload(file, setFragButtonClass) {
+async function upload(file) {
     const formData = new FormData();
     formData.append("file", file);
     // const response = 
